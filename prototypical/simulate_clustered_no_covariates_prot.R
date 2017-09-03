@@ -1,7 +1,7 @@
-library(microbenchmark)
-library(MASS)
-library(geepack)
+## This script generate data from a prototypical cluster randomized SMART
+## with no covariates
 
+library(MASS)
 
 ##Set means and variance values
 p_1 = .3 ##Probability of response to treatment 1
@@ -144,19 +144,4 @@ for(i in 1:N){
 full_data_frame = as.data.frame(full_data)
 names(full_data_frame) = c("clus_id", "A1", "R", "A2", "Y")
 
-cell_id_mat = cbind((full_data[,2] == 1)&(full_data[,3] ==1), (full_data[,2] == 1)&(full_data[,3] ==0)&(full_data[,4]==1), (full_data[,2] == 1)&(full_data[,3] ==0)&(full_data[,4]==-1), 
-(full_data[,2] == -1)&(full_data[,3] ==1), (full_data[,2] == -1)&(full_data[,3] ==0)&(full_data[,4]==1), (full_data[,2] == -1)&(full_data[,3] ==0)&(full_data[,4]==-1))
-
-
-
-
-##Check cell ICC
-k = 3 ##Cell you want to check
-xx = full_data[cell_id_mat[,k],c(1,5)]
-df1 = data.frame(as.factor(xx[,1]), xx[,2])
-names(df1) = c('clus', 'dat')
-ICCest(x = clus, y = dat, data = df1)
-
-
-##Program using GEEpack
-
+## full_data_frame contains the generated data set
