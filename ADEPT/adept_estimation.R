@@ -1,22 +1,13 @@
-### Comments for Tim ###
+## This is a function to calculate the ADEPT regression estimator in the paper. We use fixed known weights
+## of 2 and 4. We also implement iteratively as highlighted in section 3.3 with an exchangeable working 
+## correlation matrix.
 
-## check this with each ADEPT sim,
-## make it possible to only do independent working correlation?
-## make it possible to do different weightings, make sure to change in estimation and r and sigma estiamtion
-## make sure when doing t-statistic, I subtract 2 times cov
-## check for when I have more than one covariate and no covariates
-## run code on data set with no preset values like d which came from generating the data
-## get rid of all silly comments
-## could functionize even further if i wanted, like computing v hat getting mean, getting se
-## need to commment in functions and in standard error estimation, comments should be relatively the same
-
-###					###
-
-## Currently this does the ADEPT regression highlighted in the paper, with fixed weights of 2 and 4.
-
+## The function inputs data collected from an ADEPT style cluster randomized SMART and outputs
+## 4 things: the coefficient estimates, the estimated var_cov matrix of the coefficient estimates ,
+## the mean estimate under each regime, and the estimated var_cov matrix of those estimates.
 
 ADEPT_regression = function(dat, outcome, A1, R, A2, covariates = NULL, cluster) {
-	## dat is a data frame where all data is stored
+	## dat is a data frame where all data is stored, see example data for structure
 	
 	## outcome is a character (i.e. string) indicating the name of the outcome in dat
 	
@@ -555,9 +546,9 @@ ADEPT_regression = function(dat, outcome, A1, R, A2, covariates = NULL, cluster)
 		
 			
 	## Now we make the output beautiful.  We end up returning 
-	## 4 things: the coefficient estimates-coefficients, their var_cov 
+	## 4 things: the coefficient estimates-coefficients, their estimated var_cov 
 	## matrix-var_cov_coefficients, the mean under each regime estimates-DTR_mean_estimates, 
-	## and the var_cov matrix of those estimates-var_cov_DTR_mean.  We obtain the 
+	## and the estimated var_cov matrix of those estimates-var_cov_DTR_mean.  We obtain the 
 	## mean under each regime using a transformation matrix
 	
 	eta_names = NULL
