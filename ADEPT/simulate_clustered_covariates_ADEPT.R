@@ -1,58 +1,58 @@
-library(microbenchmark)
-library(MASS)
-library(geepack)
+## This script generate data from an ADEPT cluster randomized SMART
+## with covariates
 
-##Dimension of covariates
-d = 2
+library(MASS)
+
+#Dimension of covariates
+d = 3
 cov_coeff = rnorm(d, mean=0, sd= 10)  ## Generate coefficients for covariates
 
 ##Set means and variance values
 p_1 = .3 ##Probability of response to treatment 1
 p_2 = .2 ##Probability of response to treatment -1
-cell_mu = c(10,8,2,4,-2,3)  ##ordered vector of means for each cell of SMART
-cell_var = c(100,100,100,100,100,100) ##ordered vector of variances for each cell of SMART
-cell_cor = c(.1, .2, .15, .12, .11, .07) ##ordered vector of correlations for each cell of SMART 
-cell_cov = cell_var*cell_cor 
+cell_mu = c(-10,-11,-8,9,11)  ##ordered vector of means for each cell of SMART
+cell_var = c(10,80,5,60,100) ##ordered vector of variances for each cell of SMART
+cell_cor = c(.9, .1, .02, .2, .01) ##ordered vector of correlations for each cell of SMART 
+cell_cov = cell_var*cell_cor
 
 ## Return table of treatment means and treatment variances
 q_1 = 1-p_1
 q_2 = 1- p_2
 treat_mu = c(cell_mu[1]*p_1 + cell_mu[2]*q_1, cell_mu[1]*p_1 + cell_mu[3]*q_1,
-cell_mu[4]*p_2 + cell_mu[5]*q_2, cell_mu[4]*p_2 + cell_mu[6]*q_2) #Treatment means
+cell_mu[4]*p_2 + cell_mu[5]*q_2) #Treatment means
 
-treat_var = c(cell_var[1]*p_1 + cell_var[2]*q_1, cell_var[1]*p_1 + cell_var[3]*q_1, 	   cell_var[4]*p_2 + cell_var[5]*q_2, cell_var[4]*p_2 + cell_var[6]*q_2)  ##Treatment Variances
+treat_var = c(cell_var[1]*p_1 + cell_var[2]*q_1, cell_var[1]*p_1 + cell_var[3]*q_1, 	   cell_var[4]*p_2 + cell_var[5]*q_2)  ##Treatment Variances
 
-mean_diff_term = c((cell_mu[1]-cell_mu[2])^2*p_1*q_1, (cell_mu[1]-cell_mu[3])^2*p_1*q_1,
-(cell_mu[4]-cell_mu[5])^2*p_2*q_2, (cell_mu[4]-cell_mu[6])^2*p_2*q_2)
+mean_diff_term = c((cell_mu[1]-cell_mu[2])^2*p_1*q_1, (cell_mu[1]-cell_mu[3])^2*p_1*q_1, (cell_mu[4]-cell_mu[5])^2*p_2*q_2)
 
 treat_var = treat_var + mean_diff_term
 
-treat_cov = c(cell_cov[1]*p_1 + cell_cov[2]*q_1, cell_cov[1]*p_1 + cell_cov[3]*q_1, 	   cell_cov[4]*p_2 + cell_cov[5]*q_2, cell_cov[4]*p_2 + cell_cov[6]*q_2)  ##Treatment Covariances
+treat_cov = c(cell_cov[1]*p_1 + cell_cov[2]*q_1, cell_cov[1]*p_1 + cell_cov[3]*q_1, 	   cell_cov[4]*p_2 + cell_cov[5]*q_2)  ##Treatment Covariances
 
 treat_cov = treat_cov + mean_diff_term
 treat_cor = treat_cov/treat_var
 
 treat_summary = data.frame(treat_mu, treat_var, treat_cor)
-row.names(treat_summary) = c("A1=1,A2=1", "A1=1,A2=-1", "A1=-1,A2=1", "A1=-1,A2=-1" )
+row.names(treat_summary) = c("A1=1,A2=1", "A1=1,A2=-1", "A1=-1")
 
 treat_summary
 cov_coeff
 
-m = 5
+m=5
 
 ## Create the data set
-N = 5000 ##This is the number of clusters
-m_vec = rpois(N, m) + 1 #rep(m,N) #
+N = 200  ##This is the number of clusters
+m_vec = rpois(N,m)+1  ## rep(m, N) # This is the cluster size, could just make it rep(k, N) if want same cluster size!
 unique_m = unique(m_vec)
 max_m = max(unique_m)
 p_A1 = .5 ##Probability of receiving treatment A1
-p_A2 = .5 ##Probability of receiving treatment A2 for non-respnoders
+p_A2 = .5 ##Probability of receiving treatment A2 for non-respnoders of A1=1
 full_data = matrix(nrow = 0, ncol = 5+d)
 cell_cor_mat = list()
 cell_chol_cor_mat = list()
 cell_cor_mat[[max_m]] = list()
 cell_chol_cor_mat[[max_m]] = list()
-for(j in 1:6){mat = matrix(cell_cor[j], max_m, max_m)
+for(j in 1:5){mat = matrix(cell_cor[j], max_m, max_m)
 	diag(mat) = 1
 	cell_cor_mat[[max_m]][[j]] = mat
 	cell_chol_cor_mat[[max_m]][[j]] = t(chol(mat))}
@@ -61,10 +61,10 @@ for(i in unique_m){
 if(i==max_m){}else{
 cell_cor_mat[[i]] = list()
 cell_chol_cor_mat[[i]] = list()
-	for(j in 1:6){
+	for(j in 1:5){
 		cell_cor_mat[[i]][[j]] = (cell_cor_mat[[max_m]][[j]])[1:i,1:i]
-		cell_chol_cor_mat[[i]][[j]] = (cell_chol_cor_mat[[max_m]][[j]])[1:i,1:i]}}}}
-
+		cell_chol_cor_mat[[i]][[j]] = (cell_chol_cor_mat[[max_m]][[j]])[1:i,1:i]}}}
+}
 for(i in 1:N){
 	m = m_vec[i]
 	
@@ -103,7 +103,7 @@ for(i in 1:N){
 				Y = cell_chol_cor_mat[[m]][[3]]%*%Y
 				Y = Y + cell_mu[3] + cov_mean
 				temp_mat = cbind(rep(i,m), rep(1,m), rep(0,m), rep(-1,m), cur_cov_mat, Y)
-				full_data = rbind(full_data, temp_mat)	
+				full_data = rbind(full_data, temp_mat)		
 			}
 		}
 		
@@ -120,24 +120,12 @@ for(i in 1:N){
 			full_data = rbind(full_data, temp_mat)
 			
 		} else{
-			A2 = 2*rbinom(1, 1, p_A2) -1
-			
-			## Generate data for A_1 = -1 and R = 0 and A_2 = 1
-			if(A2 == 1){
-				Y = rnorm(m, 0, sd = sqrt(cell_var[4]))
-				Y = cell_chol_cor_mat[[m]][[5]]%*%Y
-				Y = Y + cell_mu[5] + cov_mean
-				temp_mat = cbind(rep(i,m), rep(-1,m), rep(0,m), rep(1,m), cur_cov_mat, Y)
-				full_data = rbind(full_data, temp_mat)
-			
-			## Generate data for A_1 = -1 and R = 0 and A_2 = -1	
-			} else{
-				Y = rnorm(m, 0, sd = sqrt(cell_var[6]))
-				Y = cell_chol_cor_mat[[m]][[6]]%*%Y
-				Y = Y + cell_mu[6] + cov_mean
-				temp_mat = cbind(rep(i,m), rep(-1,m), rep(0,m), rep(-1,m), cur_cov_mat, Y)
-				full_data = rbind(full_data, temp_mat)
-			}
+			A2 = 1
+			Y = rnorm(m, 0, sd = sqrt(cell_var[5]))
+			Y = cell_chol_cor_mat[[m]][[5]]%*%Y
+			Y = Y + cell_mu[5] + cov_mean
+			temp_mat = cbind(rep(i,m), rep(-1,m), rep(0,m), rep(1,m), cur_cov_mat, Y)
+			full_data = rbind(full_data, temp_mat)	
 		}
 	}
 }
@@ -146,4 +134,4 @@ cov_names = NULL
 for(i in 1:d){cov_names[i] = paste("X", i, sep="")}
 names(full_data_frame) = c("clus_id", "A1", "R", "A2", cov_names, "Y")
 
-
+## full_data_frame contains the generated data set
