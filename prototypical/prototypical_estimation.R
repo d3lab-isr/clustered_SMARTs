@@ -1,19 +1,10 @@
-### Comments for Tim ###
+## This is a function to calculate the prototypical regression estimator in the paper. We use fixed known weights
+## of 2 and 4. We also implement iteratively as highlighted in section 3.3 with an exchangeable working 
+## correlation matrix.
 
-## check this with each prototypical sim,
-## make it possible to only do independent working correlation?
-## make it possible to do different weightings, make sure to change in estimation and r and sigma estiamtion
-## make sure when doing t-statistic, I subtract 2 times cov
-## check for when I have more than one covariate and no covariates
-## run code on data set with no preset values like d which came from generating the data
-## get rid of all silly comments
-## could functionize even further if i wanted, like computing v hat getting mean, getting se
-## need to commment in functions and in standard error estimation, comments should be relatively the same
-
-###					###
-
-## Currently this does the prototypical regression highlighted in the paper, with fixed weights of 2 and 4.
-
+## The function inputs data collected from an prototypical style cluster randomized SMART and outputs
+## 4 things: the coefficient estimates, the estimated var_cov matrix of the coefficient estimates ,
+## the mean estimate under each regime, and the estimated var_cov matrix of those estimates.
 
 prototypical_regression = function(dat, outcome, A1, R, A2, covariates = NULL, cluster) {
 	## dat is a data frame where all data is stored
