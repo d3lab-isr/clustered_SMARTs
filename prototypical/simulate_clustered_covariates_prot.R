@@ -1,6 +1,7 @@
-library(microbenchmark)
+## This script generate data from a prototypical cluster randomized SMART
+## with covariates
+
 library(MASS)
-library(geepack)
 
 ##Dimension of covariates
 d = 2
@@ -146,4 +147,4 @@ cov_names = NULL
 for(i in 1:d){cov_names[i] = paste("X", i, sep="")}
 names(full_data_frame) = c("clus_id", "A1", "R", "A2", cov_names, "Y")
 
-
+## full_data_frame contains the generated data set
